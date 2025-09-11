@@ -25,28 +25,37 @@
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead class="table-success">
-                        <tr>
-                            <th>Nome</th>
-                            <th>Fone</th>
-                            <th>Função</th>
-                            <th>Ações</th>
-                        </tr>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Fone</th>
+                        <th>Função</th>
+                        <th>Ações</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {% for funcionario in object_list %}
-                        <tr>
-                            <td>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#modal{{ funcionario.id }}">
-                                    {{ funcionario.nome }}
-                                </a>
-                            </td>
-                            <td>{{ funcionario.fone }}</td>
-                            <td>{{ funcionario.funcao }}</td>
-                            <td style="text-align: center">
-                                <!-- Ações aqui -->
-                            </td>
-                        </tr>
-                        {% endfor %}
+                    {% for funcionario in object_list %}
+                    <tr>
+                        <td>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modal{{ funcionario.id }}">
+                                {{ funcionario.nome }}
+                            </a>
+                        </td>
+                        <td>{{ funcionario.fone }}</td>
+                        <td>{{ funcionario.funcao }}</td>
+                        <td style="text-align: center">
+                            <a href="{% url 'funcionario_editar' funcionario.pk %}">
+                                <span class="icon">
+                                    <i class="fas fa-edit"></i>
+                                </span>
+                            </a>
+                            <a href="{% url 'funcionario_apagar' funcionario.pk %}">
+                                <span class="icon">
+                                    <i class="far fa-trash-alt"></i>
+                                </span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -66,8 +75,8 @@
                     </div>
                     <div class="modal-body d-flex justify-content-center">
                         <div>
-                            {% if funcionario.foto.url is not empty %}
-                                <img src="{{ funcionario.foto.url }}" class="img-thumbnail" width="100" height="100" alt="">
+                            {% if funcionario.foto is not empty%}
+                            <img src="{{ funcionario.foto.url }}" class="img-thumbnail" width="100" height="100" alt="">
                             {% endif %}
                             <h6><strong>Fone: </strong>{{ funcionario.fone }}</h6>
                         </div>
