@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.functions import Upper
+
 
 class Servico(models.Model):
     nome = models.CharField('Nome', max_length=100, help_text='Nome completo do serviço', unique=True)
@@ -13,7 +15,7 @@ class Servico(models.Model):
     class Meta:
         verbose_name = 'Serviço'
         verbose_name_plural = 'Serviços'
-
+        ordering = [Upper('nome')]
     def __str__(self):
         return self.nome
 

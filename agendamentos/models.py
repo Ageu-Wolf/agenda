@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Upper
 
 from servicos.models import Servico
 
@@ -11,6 +12,8 @@ class Agendamento(models.Model):
                                     help_text='Nome do Funcionário', on_delete=models.PROTECT)
     servico = models.ManyToManyField('servicos.Servico', verbose_name='Serviço', through='agendamentos.OrdemServicos')
 
+    valor = models.DecimalField( verbose_name='Valor total',decimal_places=2, max_digits=6, default=0.00)
+    status = models.CharField( verbose_name='Status', max_length=1, help_text='Status do agendamento', default='A')
     @property
     def servicos(self):
         return OrdemServicos.objects.filter(agendamento=self)
@@ -18,6 +21,7 @@ class Agendamento(models.Model):
     class Meta:
         verbose_name = 'Agendamento'
         verbose_name_plural = 'Agendamentos'
+        ordering = ['-horario']
 
     def __str__(self):
         return f'Cliente: {self.cliente}'
@@ -29,7 +33,7 @@ class OrdemServicos(models.Model):
         ('C', 'Cancelado'),
     )
 
-    agendamento = models.ForeignKey('agendamentos.Agendamento', verbose_name='Agendamento', on_delete=models.PROTECT, related_name='agendamento')
+    agendamento = models.ForeignKey('agendamentos.Agendamento', verbose_name='Agendamento', on_delete=models.CASCADE, related_name='agendamento')
 
     servico = models.ForeignKey('servicos.Servico', verbose_name='Serviço', on_delete=models.PROTECT, related_name='ordem_servico')
 
@@ -49,3 +53,21 @@ class OrdemServicos(models.Model):
     def __str__(self):
         return self.servico.nome
 
+
+    def calcular_valor_ordem(self):
+        valor_total = 0
+        qs = OrdemServicos.objects.filter(agendamento=self.agendamento)
+        for item in qs:
+            if item.situacao != 'C':
+                valor_total += item.preco
+        self.agendamento.valor = valor_total
+        self.agendamento.save()
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.preco = self.servico.preco
+        super().save(force_insert, force_update, using, update_fields)
+        self.calcular_valor_ordem()
+
+    def delete(self, using=None, keep_parents=False):
+        super().delete(using=None, keep_parents=keep_parents)
+        self.calcular_valor_ordem()
